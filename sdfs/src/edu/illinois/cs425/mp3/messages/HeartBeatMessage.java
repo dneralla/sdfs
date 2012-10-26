@@ -4,7 +4,7 @@ import java.util.Random;
 
 import edu.illinois.cs425.mp3.MemberNode;
 import edu.illinois.cs425.mp3.ProcessorThread;
-import edu.illinois.cs425.mp3.TimerThread;
+import edu.illinois.cs425.mp3.FailureDetectorThread;
 
 public class HeartBeatMessage extends Message {
 
@@ -24,7 +24,7 @@ public class HeartBeatMessage extends Message {
 						+ this.getSourceNode().getHostAddress().toString());
 
 		if (!ProcessorThread.toStartHeartBeating) {
-			ProcessorThread.getServer().setTimer(new TimerThread());
+			ProcessorThread.getServer().setTimer(new FailureDetectorThread());
 
 			ProcessorThread.getServer().getTimer().start();
 			ProcessorThread.toStartHeartBeating = true;

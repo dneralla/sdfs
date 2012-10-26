@@ -9,13 +9,13 @@ import edu.illinois.cs425.mp3.messages.MulticastFailureMessage;
  * Class spawns thread, which will be used for 
  * detecting node failures.
  */
-public class TimerThread extends ServiceThread {
+public class FailureDetectorThread extends ServiceThread {
 
-	public TimerThread(Message message) {
+	public FailureDetectorThread(Message message) {
 		super(message);
 	}
 
-	public TimerThread() {
+	public FailureDetectorThread() {
 		super();
 	}
 

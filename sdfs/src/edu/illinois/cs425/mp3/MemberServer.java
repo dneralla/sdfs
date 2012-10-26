@@ -39,7 +39,7 @@ public class MemberServer {
 	private volatile Logger logger;
 	private DatagramSocket socket;
 	private volatile MemberNode recentLeftNode;
-	private TimerThread timer;
+	private FailureDetectorThread timer;
 	private MemberNode heartbeatSendingNode;
 	private boolean isInRing = false;
 
@@ -51,11 +51,11 @@ public class MemberServer {
 		this.isInRing = isInRing;
 	}
 
-	public TimerThread getTimer() {
+	public FailureDetectorThread getTimer() {
 		return timer;
 	}
 
-	public void setTimer(TimerThread timer) {
+	public void setTimer(FailureDetectorThread timer) {
 		this.timer = timer;
 	}
 

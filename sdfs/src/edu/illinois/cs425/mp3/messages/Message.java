@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -21,8 +20,8 @@ import edu.illinois.cs425.mp3.ProcessorThread;
 public abstract class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	static final int MAX_MESSAGE_LENGTH = 1024;
-	
+	public static final int MAX_MESSAGE_LENGTH = 1024;
+
 	private InetAddress host;
 	private int port;
 	private int multicastPort;
@@ -31,7 +30,7 @@ public abstract class Message implements Serializable {
 	private int originalPort;
 
 	// sourceNode always contains the details of message sender
-    // centralNode always contains the details of node who multicasts the update 
+    // centralNode always contains the details of node who multicasts the update
 	// alteredNode always contains the details of joined/failed/left node
 	private MemberNode sourceNode, centralNode, alteredNode;
 
@@ -144,7 +143,7 @@ public abstract class Message implements Serializable {
 
 	public synchronized boolean mergeIntoMemberList() {
 
-		List<MemberNode> globalList = (ArrayList<MemberNode>) ProcessorThread
+		List<MemberNode> globalList = ProcessorThread
 				.getServer().getGlobalList();
 		boolean isLatestUpdate = false;
 		Date timeStamp = getSourceNode().getTimeStamp();

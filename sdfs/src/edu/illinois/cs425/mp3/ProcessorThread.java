@@ -27,7 +27,7 @@ public class ProcessorThread extends Thread {
 		ProcessorThread.multicastServer = multicastServer;
 	}
 
-	static boolean toStartHeartBeating = false;
+	public static boolean toStartHeartBeating = false;
 
 	public ProcessorThread(MemberServer server, MulticastServer multicastServer) {
 		ProcessorThread.server = server;

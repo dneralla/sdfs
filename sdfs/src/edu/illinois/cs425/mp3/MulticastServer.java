@@ -97,7 +97,7 @@ public class MulticastServer {
 		isRunning = false;
 	}
 
-	void multicastUpdate(Message multicastMessage) throws Exception,
+	public void multicastUpdate(Message multicastMessage) throws Exception,
 			IOException {
 
 		ProcessorThread.getServer().logNetworkData(multicastMessage);
