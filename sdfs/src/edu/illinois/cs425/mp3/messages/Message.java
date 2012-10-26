@@ -8,16 +8,14 @@ import java.util.Date;
 import java.util.List;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
-
-
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 
 /*
- * Generic class for handling all messages.
+ * Generic class for handling all UDP messages.
  * Depending on the type(class) of message received,
  * the corresponding processMesmethod is invoked.
  */
-public abstract class Message implements Serializable {
+public abstract class Message extends GenericMessage implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final int MAX_MESSAGE_LENGTH = 1024;
@@ -143,8 +141,8 @@ public abstract class Message implements Serializable {
 
 	public synchronized boolean mergeIntoMemberList() {
 
-		List<MemberNode> globalList = ProcessorThread
-				.getServer().getGlobalList();
+		List<MemberNode> globalList = UDPMessageHandler
+				.getProcess().getGlobalList();
 		boolean isLatestUpdate = false;
 		Date timeStamp = getSourceNode().getTimeStamp();
 		int index = globalList.indexOf(getAlteredNode());
@@ -153,11 +151,11 @@ public abstract class Message implements Serializable {
 			if (matchingNode == null
 					&&
 					/* && checkHasJoinArrivedLate() */
-					(ProcessorThread.getServer().getRecentLeftNode() == null
-							|| !ProcessorThread.getServer().getRecentLeftNode()
+					(UDPMessageHandler.getProcess().getRecentLeftNode() == null
+							|| !UDPMessageHandler.getProcess().getRecentLeftNode()
 									.equals(getAlteredNode()) || getAlteredNode()
 							.getTimeStamp()
-							.after(ProcessorThread.getServer()
+							.after(UDPMessageHandler.getProcess()
 									.getRecentLeftNode().getTimeStamp()))) {
 				globalList.add(getAlteredNode());
 				return true;
@@ -172,10 +170,10 @@ public abstract class Message implements Serializable {
 					&& matchingNode.getTimeStamp().before(
 							getAlteredNode().getTimeStamp())) {
 				globalList.remove(getAlteredNode());
-				ProcessorThread.getServer().setRecentLeftNode(getAlteredNode());
+				UDPMessageHandler.getProcess().setRecentLeftNode(getAlteredNode());
 				return true;
 			} else {
-				ProcessorThread.getServer().setRecentLeftNode(getAlteredNode());
+				UDPMessageHandler.getProcess().setRecentLeftNode(getAlteredNode());
 			}
 
 		}
@@ -183,5 +181,4 @@ public abstract class Message implements Serializable {
 	}
 
 	public abstract void processMessage();
-	// public abstract void mergeIntoMessageList();
 }

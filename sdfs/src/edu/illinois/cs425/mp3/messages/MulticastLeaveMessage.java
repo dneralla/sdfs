@@ -1,8 +1,8 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
 import edu.illinois.cs425.mp3.ServiceThread;
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 
 public class MulticastLeaveMessage extends MulticastMessage {
 
@@ -18,30 +18,33 @@ public class MulticastLeaveMessage extends MulticastMessage {
 			public void run() {
 				try {
 
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Multicast leave message Processing  of node"
 									+ getMessage().getAlteredNode()
 											.getHostAddress());
 
 					if (mergeIntoMemberList()) {
-						Message message = getNewRelayMessage(ProcessorThread
-								.getServer().getNode(), getMessage()
+						Message message = getNewRelayMessage(UDPMessageHandler
+								.getProcess().getNode(), getMessage()
 								.getSourceNode(), getMessage().getAlteredNode());
-						ProcessorThread.getServer().sendMessage(message,
-								ProcessorThread.getServer().getNeighborNode());
+						UDPMessageHandler.sendMessage(
+								message,
+								UDPMessageHandler.getProcess()
+										.getNeighborNode());
 						if (getMessage().getAlteredNode().compareTo(
-								ProcessorThread.getServer().getNeighborNode())) {
-							ProcessorThread.getServer().setNeighborNode(
+								UDPMessageHandler.getProcess()
+										.getNeighborNode())) {
+							UDPMessageHandler.getProcess().setNeighborNode(
 									getMessage().getSourceNode());
 						}
 
 					}
 
 				} catch (Exception e) {
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Multicast leave message  Processing failed of node"
 									+ getMessage().getAlteredNode()

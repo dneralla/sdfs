@@ -1,8 +1,8 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
 import edu.illinois.cs425.mp3.ServiceThread;
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 
 public abstract class RelayMessage extends Message {
 
@@ -20,12 +20,12 @@ public abstract class RelayMessage extends Message {
 			@Override
 			public void run() {
 				try {
-					MemberNode self = ProcessorThread.getServer().getNode();
+					MemberNode self = UDPMessageHandler.getProcess().getNode();
 					if (mergeIntoMemberList()) {
 						Message message = getNewMulticastMessage(self,
 								getMessage().getCentralNode(), getMessage()
 										.getAlteredNode());
-						ProcessorThread.getServer().sendMessage(message,
+						UDPMessageHandler.sendMessage(message,
 								message.getSourceNode());
 					}
 				} catch (Exception e) {

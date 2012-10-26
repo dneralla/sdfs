@@ -1,8 +1,8 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
 import edu.illinois.cs425.mp3.ServiceThread;
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 
 public class JoinMessage extends Message {
 	private static final long serialVersionUID = 1L;
@@ -13,14 +13,14 @@ public class JoinMessage extends Message {
 	}
 
 	@Override
-	public void processMessage() {		
+	public void processMessage() {
 		new ServiceThread(this) {
 
 			@Override
 			public void run() {
 				try {
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Servicing Join request of node"
 									+ getMessage().getSourceNode()
@@ -28,26 +28,26 @@ public class JoinMessage extends Message {
 
 					((JoinMessage) getMessage()).mergeIntoMemberList();
 
-					MemberNode oldNeighbourNode = ProcessorThread.getServer()
+					MemberNode oldNeighbourNode = UDPMessageHandler.getProcess()
 							.getNeighborNode();
-					ProcessorThread.getServer().setNeighborNode(
+					UDPMessageHandler.getProcess().setNeighborNode(
 							getMessage().getSourceNode());
 
-					Message ackMessage = new JoinAckMessage(ProcessorThread
-							.getServer().getNode(), null, null);
+					Message ackMessage = new JoinAckMessage(UDPMessageHandler
+							.getProcess().getNode(), null, null);
 
 					((JoinAckMessage) ackMessage)
 							.setNeighbourNode(oldNeighbourNode);
-					((JoinAckMessage) ackMessage).setGlobalList(ProcessorThread
-							.getServer().getGlobalList());
+					((JoinAckMessage) ackMessage).setGlobalList(UDPMessageHandler
+							.getProcess().getGlobalList());
 
-					ProcessorThread.getServer().sendMessage(ackMessage,
+					UDPMessageHandler.sendMessage(ackMessage,
 							getMessage().getSourceNode());
 
 				} catch (Exception e) {
 
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Processing join failed of node"
 									+ getMessage().getSourceNode()

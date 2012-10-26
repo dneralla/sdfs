@@ -3,8 +3,8 @@ package edu.illinois.cs425.mp3.messages;
 import java.util.List;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
 import edu.illinois.cs425.mp3.ServiceThread;
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 
 public class JoinAckMessage extends Message {
 
@@ -38,21 +38,18 @@ public class JoinAckMessage extends Message {
 			@Override
 			public void run() {
 				try {
-					ProcessorThread.getServer().getLogger().info("Join Acknowledging and updating neighbor as "+((JoinAckMessage)getMessage()).getNeighbourNode().getHostAddress());
-					ProcessorThread.getServer().setNeighborNode(((JoinAckMessage)getMessage()).getNeighbourNode());
+					UDPMessageHandler.getProcess().getLogger().info("Join Acknowledging and updating neighbor as "+((JoinAckMessage)getMessage()).getNeighbourNode().getHostAddress());
+					UDPMessageHandler.getProcess().setNeighborNode(((JoinAckMessage)getMessage()).getNeighbourNode());
 
-                    ProcessorThread.getServer().setGlobalList(getGlobalList());
+                    UDPMessageHandler.getProcess().setGlobalList(getGlobalList());
 
-
-					ProcessorThread.getMulticastServer().ensureRunning();
-
-					MemberNode self = ProcessorThread.getServer().getNode();
+					MemberNode self = UDPMessageHandler.getProcess().getNode();
 					MulticastJoinMessage message = new MulticastJoinMessage(self,self,self);
 
-					ProcessorThread.getMulticastServer().multicastUpdate(message);
+					UDPMessageHandler.getMulticastServer().multicastUpdate(message);
 
 				} catch (Exception e) {
-				 ProcessorThread.getServer().getLogger().info("Updating neighbor or multicasting update failed");
+				 UDPMessageHandler.getProcess().getLogger().info("Updating neighbor or multicasting update failed");
 				 System.out.println("updating neighbor failed");
 				}
 			}

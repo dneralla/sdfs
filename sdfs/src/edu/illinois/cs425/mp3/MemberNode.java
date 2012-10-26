@@ -2,7 +2,7 @@ package edu.illinois.cs425.mp3;
 
 /**
  * Class for holding all the properties of server
- * i.e hostname, hostport & timestamp 
+ * i.e hostname, hostport & timestamp
  */
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,7 +11,6 @@ import java.util.Date;
 public class MemberNode implements java.io.Serializable {
 
 	private InetAddress hostAddress;
-	private int hostPort;
 	private Date timeStamp;
 
 	public Date getTimeStamp() {
@@ -22,9 +21,8 @@ public class MemberNode implements java.io.Serializable {
 		this.timeStamp = timeStamp;
 	}
 
-	public MemberNode(InetAddress hostAddress, int hostPort) {
+	public MemberNode(InetAddress hostAddress) {
 		this.hostAddress = hostAddress;
-		this.hostPort = hostPort;
 		this.timeStamp = new Date();
 	}
 
@@ -36,24 +34,14 @@ public class MemberNode implements java.io.Serializable {
 		this.hostAddress = hostAddress;
 	}
 
-	public int getHostPort() {
-		return hostPort;
-	}
-
-	public void setHostPort(int hostPort) {
-		this.hostPort = hostPort;
-	}
-
-	public MemberNode(String hostName, int hostPort)
-			throws UnknownHostException {
-		this(InetAddress.getByName(hostName), hostPort);
+	public MemberNode(String hostName) throws UnknownHostException {
+		this(InetAddress.getByName(hostName));
 	}
 
 	public boolean compareTo(MemberNode node) {
 		if (node == null)
 			return false;
-		if (this.getHostAddress().equals(node.getHostAddress())
-				&& this.getHostPort() == node.getHostPort())
+		if (this.getHostAddress().equals(node.getHostAddress()))
 			return true;
 		return false;
 	}
@@ -62,8 +50,7 @@ public class MemberNode implements java.io.Serializable {
 	public boolean equals(Object node) {
 		if (node == null || !(node instanceof MemberNode))
 			return false;
-		if (hostAddress.equals(((MemberNode) node).getHostAddress())
-				&& hostPort == ((MemberNode) node).getHostPort())
+		if (hostAddress.equals(((MemberNode) node).getHostAddress()))
 			return true;
 		return false;
 	}
@@ -73,11 +60,15 @@ public class MemberNode implements java.io.Serializable {
 		int hashCode = 0;
 		hashCode = 31 * hashCode
 				+ (hostAddress == null ? 0 : hostAddress.hashCode());
-		hashCode = 31 * hashCode + (hostPort);
 		return hashCode;
 	}
 
 	public String getDescription() {
-		return  hostAddress.toString()+":"+ getHostPort();
+		return hostAddress.toString() + ":" + Process.UDP_SERVER_PORT;
+	}
+
+	// server which joined older dominates
+	public boolean isGreater(MemberNode node) {
+		return this.timeStamp.before(node.getTimeStamp());
 	}
 }

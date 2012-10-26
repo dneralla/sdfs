@@ -1,7 +1,7 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 import edu.illinois.cs425.mp3.ServiceThread;
 
 public class LeaveMessage extends Message {
@@ -18,28 +18,28 @@ public class LeaveMessage extends Message {
 			public void run() {
 				try {
 
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Processing Leave message"
 									+ getMessage().getAlteredNode()
 											.getHostAddress());
 					mergeIntoMemberList();
 
-					MemberNode self = ProcessorThread.getServer().getNode();
+					MemberNode self = UDPMessageHandler.getProcess().getNode();
 					// TODO: in case of failure detection, altered is faulty
 					// node
 					MulticastLeaveMessage message = new MulticastLeaveMessage(
 							self, self, getMessage().getAlteredNode());
-					ProcessorThread.getServer().setRecentLeftNode(
+					UDPMessageHandler.getProcess().setRecentLeftNode(
 							getAlteredNode());
-					ProcessorThread.getMulticastServer().multicastUpdate(
+					UDPMessageHandler.getMulticastServer().multicastUpdate(
 							message);
 
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Leave Message processing failed or multicast update failed of node"
 									+ getMessage().getAlteredNode()

@@ -1,16 +1,12 @@
 package edu.illinois.cs425.mp3;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +16,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
 import edu.illinois.cs425.mp3.messages.JoinMessage;
 import edu.illinois.cs425.mp3.messages.LeaveMessage;
@@ -31,17 +28,63 @@ import edu.illinois.cs425.mp3.messages.Message;
  * created and it sends messages if flag sendHeartBeat is set. All variables which
  * are accessed by multiple threads are declared as volatile.
  */
-public class MemberServer {
-	private MemberNode node;
+public class Process {
+	public static final int MULTICAST_LISTENER_PORT = 4446;
+	public static final String MULTICAST_GROUP = "230.0.0.1";
+
+	public static final int UDP_SERVER_PORT = 4447;
+	public static final int TCP_SERVER_PORT = 4448;
+
+	private MemberNode self;
+	private MemberNode master;
 	private volatile MemberNode neighborNode;
 	private volatile long lastReceivedHeartBeatTime;
 	private volatile List<MemberNode> globalList;
 	private volatile Logger logger;
-	private DatagramSocket socket;
 	private volatile MemberNode recentLeftNode;
-	private FailureDetectorThread timer;
+	private FailureDetectorThread failureDetector;
 	private MemberNode heartbeatSendingNode;
 	private boolean isInRing = false;
+
+	private MulticastServer multicastServer;
+	private TCPServer tcpServer;
+	private final UDPServer udpServer;
+
+	public TCPServer getTcpServer() {
+		return tcpServer;
+	}
+
+	public void setTcpServer(TCPServer tcpServer) {
+		this.tcpServer = tcpServer;
+	}
+
+	public UDPServer getUdpServer() {
+		return udpServer;
+	}
+
+	public MemberNode getMaster() {
+		return master;
+	}
+
+	public void setMaster(MemberNode master) {
+		this.master = master;
+	}
+
+	public MulticastServer getMulticastServer() {
+		return multicastServer;
+	}
+
+	public void setMulticastServer(MulticastServer multicastServer) {
+		this.multicastServer = multicastServer;
+	}
+
+	public TCPServer getTCPServer() {
+		return tcpServer;
+	}
+
+	public void setTCPServer(TCPServer tcpServer) {
+		this.tcpServer = tcpServer;
+	}
 
 	public boolean isInRing() {
 		return isInRing;
@@ -51,12 +94,12 @@ public class MemberServer {
 		this.isInRing = isInRing;
 	}
 
-	public FailureDetectorThread getTimer() {
-		return timer;
+	public FailureDetectorThread getFailureDetector() {
+		return failureDetector;
 	}
 
-	public void setTimer(FailureDetectorThread timer) {
-		this.timer = timer;
+	public void setTimer(FailureDetectorThread failureDetector) {
+		this.failureDetector = failureDetector;
 	}
 
 	public MemberNode getRecentLeftNode() {
@@ -91,11 +134,17 @@ public class MemberServer {
 		this.neighborNode = neighborNode;
 	}
 
-	private MemberServer() {
+	private Process() throws IOException {
 		this.neighborNode = null;
 		this.recentLeftNode = null;
 		this.heartbeatSendingNode = null;
+		this.master = null;
 		this.globalList = new ArrayList<MemberNode>();
+
+		this.udpServer = new UDPServer();
+		this.multicastServer = new MulticastServer(this);
+		this.tcpServer = new TCPServer();
+		tcpServer.start(TCP_SERVER_PORT);
 	}
 
 	public long getLastReceivedHeartBeatTime() {
@@ -106,46 +155,15 @@ public class MemberServer {
 		this.lastReceivedHeartBeatTime = lastReceivedHeartBeat;
 	}
 
-	public static MemberServer start(String hostName, int hostPort)
-			throws SocketException, UnknownHostException {
-		MemberServer server = new MemberServer();
-		MemberNode node = new MemberNode(hostName, hostPort);
-		server.socket = new DatagramSocket(hostPort);
-		server.setNode(node);
-		server.setNeighborNode(node);
-		server.globalList.add(node);
-		server.setHeartbeatSendingNode(node);
-		return server;
-	}
-
-	private void setNode(MemberNode node) {
-		this.node = node;
-	}
-
-	public void stop() {
-		socket.close();
-	}
-
 	public MemberNode getNode() {
-		return node;
+		return self;
 	}
 
-	public DatagramSocket getSocket() {
-		return socket;
-	}
-
-	public void sendMessage(Message message, MemberNode receiver)
-			throws Exception {
-		DatagramPacket packet = new DatagramPacket(message.toBytes(),
-				message.toBytes().length, receiver.getHostAddress(),
-				receiver.getHostPort());
-		getSocket().send(packet);
-	}
 
 	public synchronized void logNetworkData(Message m) throws Exception {
 		File file = new File("Server_"
 				+ InetAddress.getLocalHost().getHostName() + "_"
-				+ String.valueOf(getNode().getHostPort()) + ".network");
+				+ String.valueOf(getNode()) + ".network");
 		FileWriter fw = new FileWriter(file.getName(), true);
 		if (!(m instanceof HeartBeatMessage))
 			fw.write(m.toBytes().toString());
@@ -158,7 +176,7 @@ public class MemberServer {
 		for (MemberNode node : getGlobalList())
 			if (node != null)
 				System.out.print(node.getHostAddress() + " "
-						+ node.getHostPort() + ", ");
+						+ UDP_SERVER_PORT + ", ");
 		System.out.println("]");
 	}
 
@@ -170,16 +188,16 @@ public class MemberServer {
 		this.heartbeatSendingNode = heartbeatSendingNode;
 	}
 
+	@SuppressWarnings("null")
 	public static void main(String[] args) throws Exception {
-		MemberServer server = null;
-		MulticastServer multicastServer = null;
+		Process process = new Process();
 		FileHandler fileTxt = new FileHandler("Server_"
 				+ InetAddress.getLocalHost().getHostName() + "_" + args[0]
 				+ ".log");
 		SimpleFormatter formatterTxt = new SimpleFormatter();
 
 		// Assumption: Master server starts on linux5 machine and at 5095 port
-		MemberNode master = new MemberNode("linux5.ews.illinois.edu", 5095);
+		process.setMaster(new MemberNode("linux5.ews.illinois.edu"));
 
 		// Create Logger
 		LogManager lm = LogManager.getLogManager();
@@ -201,19 +219,13 @@ public class MemberServer {
 		file.createNewFile();
 
 		try {
-
-			server = MemberServer.start(InetAddress.getLocalHost()
-					.getHostName(), Integer.parseInt(args[0]));
-
-			multicastServer = new MulticastServer(server);
-			if (master.getHostAddress().equals(InetAddress.getLocalHost())) {
+			if (process.getMaster().getHostAddress().equals(InetAddress.getLocalHost())) {
 				System.out.println("I'm tracker node");
-				multicastServer.ensureRunning();
+				process.startServers();
 			}
-			server.setLogger(logger);
+			process.setLogger(logger);
 
 		} catch (SocketException e) {
-
 			System.out.println("Error: Unable to open socket");
 			System.exit(-1);
 		} catch (IOException e) {
@@ -224,75 +236,80 @@ public class MemberServer {
 			System.exit(-1);
 
 		}
-
 		logger.info("Staring logging");
-		
+		new UDPMessageHandler(process).start();
 		// starting heartbeat thread
-		new ProcessorThread(server, multicastServer).start();
 		new HeartBeatServiceThread().start();
-		try {
-			String inputLine;
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					System.in));
-			System.out.print("[Please Enter Command]$ ");
-			while ((inputLine = in.readLine()) != null) {
-				if (inputLine.startsWith("join")) {
-					server.getNode().setTimeStamp(new Date());
-					Message message = new JoinMessage(server.getNode(), null,
-							server.getNode());
-					server.getLogger()
-							.info("Join message sending to"
-									+ master.getHostAddress());
+		process.new UserCommandExecutor().start();
+	}
 
-					boolean isMasterUp = (inputLine.indexOf(" ") == -1) ? true
-							: false;
-					if (isMasterUp) {
-						server.sendMessage(message, master);
-					} else {
-						String name = inputLine.substring(
-								inputLine.indexOf(" ") + 1,
-								inputLine.lastIndexOf(" "));
-						int port = Integer.valueOf(inputLine
-								.substring(inputLine.lastIndexOf(" ") + 1));
-						MemberNode temporaryMaster = new MemberNode(name, port);
-						server.sendMessage(message, temporaryMaster);
-					}
-					server.getLogger().info("Join message Sent");
+	private void startServers() throws IOException {
+		udpServer.start(UDP_SERVER_PORT);
+        tcpServer.start(TCP_SERVER_PORT);
+	}
 
-				} else if (inputLine.equals("leave")) {
-					server.getNode().setTimeStamp(new Date());
-					LeaveMessage leaveMessage = new LeaveMessage(
-							server.getNode(), null, server.getNode());
-					server.sendMessage(leaveMessage, server.getNeighborNode());
-					server.setNeighborNode(server.getNode());
-					multicastServer.stop();
-					server.setInRing(false);
-					server.getLogger().info("Leave Message sent");
-				} else if (inputLine.startsWith("print")) {
-					server.printNodes();
-				} else if (inputLine.startsWith("set master")) {
-					master.setHostAddress(InetAddress.getByName(inputLine
-							.substring(12)));
-				} else if (inputLine.equals("next")) {
-					System.out.println("Neighbour Port: "
-							+ server.getNeighborNode().getHostPort());
-				} else if (inputLine.equals("help")) {
-					System.out
-							.println("Usage: [join|leave] <hostname:hostport>");
-				} else if (inputLine.equals("exit")) {
-					System.exit(0);
-				} else {
-					try {
-						Process p = Runtime.getRuntime().exec(inputLine);
-					} catch(Exception e) {
-						System.out.println("use help for possible options");
-					}
-				}
+	public void sendMessage(GenericMessage message, MemberNode node) {
+		tcpServer.sendMessage(message, node.getHostAddress(), TCP_SERVER_PORT);
+	}
+	public class UserCommandExecutor extends Thread {
+		@Override
+		public void run() {
+			try {
+				String inputLine;
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						System.in));
 				System.out.print("[Please Enter Command]$ ");
-			}
-		} catch (IOException e) {
+				while ((inputLine = in.readLine()) != null) {
+					if (inputLine.startsWith("join")) {
+						getNode().setTimeStamp(new Date());
+						Message message = new JoinMessage(getNode(), null,
+								getNode());
+						getLogger().info(
+								"Join message sending to"
+										+ master.getHostAddress());
 
-			e.printStackTrace();
+						boolean isMasterUp = (inputLine.indexOf(" ") == -1) ? true
+								: false;
+						if (isMasterUp) {
+							sendMessage(message, master);
+						} else {
+							String name = inputLine.substring(
+									inputLine.indexOf(" ") + 1,
+									inputLine.lastIndexOf(" "));
+							int port = Integer.valueOf(inputLine
+									.substring(inputLine.lastIndexOf(" ") + 1));
+							MemberNode temporaryMaster = new MemberNode(name);
+							sendMessage(message, temporaryMaster);
+						}
+						getLogger().info("Join message Sent");
+
+					} else if (inputLine.equals("leave")) {
+						getNode().setTimeStamp(new Date());
+						LeaveMessage leaveMessage = new LeaveMessage(getNode(),
+								null, getNode());
+						sendMessage(leaveMessage, getNeighborNode());
+						setNeighborNode(getNode());
+						multicastServer.stop();
+						setInRing(false);
+						getLogger().info("Leave Message sent");
+					} else if (inputLine.startsWith("print")) {
+						printNodes();
+					} else if (inputLine.equals("next")) {
+						System.out.println("Neighbour Port: "
+								+ getNeighborNode().getDescription());
+					} else if (inputLine.equals("help")) {
+						System.out
+								.println("Usage: [join|leave] <hostname:hostport>");
+					} else if (inputLine.equals("exit")) {
+						System.exit(0);
+					}
+					System.out.print("[Please Enter Command]$ ");
+				}
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
 		}
+
 	}
 }

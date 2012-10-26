@@ -1,8 +1,8 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ProcessorThread;
 import edu.illinois.cs425.mp3.ServiceThread;
+import edu.illinois.cs425.mp3.UDPMessageHandler;
 
 public class MulticastJoinMessage extends MulticastMessage {
 
@@ -17,29 +17,29 @@ public class MulticastJoinMessage extends MulticastMessage {
 	}
 
 	@Override
-	public void processMessage() {	
+	public void processMessage() {
 		new ServiceThread(this) {
 
 			@Override
 			public void run() {
 				try {
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Multicast join message Processing of node"
 									+ getMessage().getAlteredNode()
 											.getHostAddress());
 					if (mergeIntoMemberList()) {
-						Message message = getNewRelayMessage(ProcessorThread
-								.getServer().getNode(), getMessage()
+						Message message = getNewRelayMessage(UDPMessageHandler
+								.getProcess().getNode(), getMessage()
 								.getSourceNode(), getMessage().getAlteredNode());
-						ProcessorThread.getServer().sendMessage(message,
-								ProcessorThread.getServer().getNeighborNode());
+						UDPMessageHandler.sendMessage(message,
+								UDPMessageHandler.getProcess().getNeighborNode());
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					ProcessorThread
-							.getServer()
+					UDPMessageHandler
+							.getProcess()
 							.getLogger()
 							.info("Multicast Join Message processing failed  of node"
 									+ getMessage().getAlteredNode()

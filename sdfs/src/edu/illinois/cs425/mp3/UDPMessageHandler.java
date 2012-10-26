@@ -1,37 +1,39 @@
 package edu.illinois.cs425.mp3;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
+import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.Message;
 
 /*
  * Central class for processing messages.
  */
-public class ProcessorThread extends Thread {
-	private static MemberServer server;
-	private static MulticastServer multicastServer;
+public class UDPMessageHandler extends Thread {
+	private static Process process;
 
-	public static MemberServer getServer() {
-		return server;
+	public static Process getProcess() {
+		return process;
 	}
 
 	public static MulticastServer getMulticastServer() {
-		return multicastServer;
+		return process.getMulticastServer();
 	}
 
 	public static void setMulticastServer(MulticastServer multicastServer) {
-		ProcessorThread.multicastServer = multicastServer;
+		UDPMessageHandler.setMulticastServer(multicastServer);
 	}
 
 	public static boolean toStartHeartBeating = false;
 
-	public ProcessorThread(MemberServer server, MulticastServer multicastServer) {
-		ProcessorThread.server = server;
-		ProcessorThread.multicastServer = multicastServer;
+	public UDPMessageHandler(Process process) {
+		UDPMessageHandler.process = process;
+	}
+
+	public static void sendMessage(GenericMessage message, MemberNode node) throws Exception {
+		process.getUdpServer().sendMessage(message, node.getHostAddress(), process.UDP_SERVER_PORT);
 	}
 
 	@Override
@@ -47,8 +49,8 @@ public class ProcessorThread extends Thread {
 			try {
 				packet = new DatagramPacket(receiveMessage,
 						receiveMessage.length);
-				server.getSocket().receive(packet);
-				if(server.isInRing()) {
+				process.getUdpServer().getSocket().receive(packet);
+				if(process.isInRing()) {
 					continue;
 				}
 				senderAddress = packet.getAddress();
@@ -63,13 +65,7 @@ public class ProcessorThread extends Thread {
 			} catch (Exception e) {
 
 			}
-
 		}
-
-	}
-
-	private void stopMultiCastServer() throws IOException {
-		multicastServer.stop();
 	}
 
 }
