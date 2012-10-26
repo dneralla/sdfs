@@ -1,6 +1,10 @@
-package edu.illinois.cs425.mp3;
+package edu.illinois.cs425.mp3.messages;
 
 import java.util.List;
+
+import edu.illinois.cs425.mp3.MemberNode;
+import edu.illinois.cs425.mp3.ProcessorThread;
+import edu.illinois.cs425.mp3.ServiceThread;
 
 public class JoinAckMessage extends Message {
 

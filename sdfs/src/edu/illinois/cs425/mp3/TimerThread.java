@@ -2,6 +2,9 @@ package edu.illinois.cs425.mp3;
 
 import java.util.Date;
 
+import edu.illinois.cs425.mp3.messages.Message;
+import edu.illinois.cs425.mp3.messages.MulticastFailureMessage;
+
 /*
  * Class spawns thread, which will be used for 
  * detecting node failures.

@@ -1,5 +1,7 @@
 package edu.illinois.cs425.mp3;
 
+import edu.illinois.cs425.mp3.messages.Message;
+
 public class ServiceThread extends Thread {
 	private final Message message;
 

@@ -1,4 +1,6 @@
-package edu.illinois.cs425.mp3;
+package edu.illinois.cs425.mp3.messages;
+
+import edu.illinois.cs425.mp3.MemberNode;
 
 public class RelayJoinMessage extends RelayMessage {
 	public RelayJoinMessage(MemberNode sourceNode, MemberNode centralNode,

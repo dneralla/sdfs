@@ -1,4 +1,8 @@
-package edu.illinois.cs425.mp3;
+package edu.illinois.cs425.mp3.messages;
+
+import edu.illinois.cs425.mp3.MemberNode;
+import edu.illinois.cs425.mp3.ProcessorThread;
+import edu.illinois.cs425.mp3.ServiceThread;
 
 public class JoinMessage extends Message {
 	private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-package edu.illinois.cs425.mp3;
+package edu.illinois.cs425.mp3.messages;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -7,6 +7,9 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import edu.illinois.cs425.mp3.MemberNode;
+import edu.illinois.cs425.mp3.ProcessorThread;
 
 
 

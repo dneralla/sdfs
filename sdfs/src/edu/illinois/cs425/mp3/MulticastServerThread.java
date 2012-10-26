@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 
+import edu.illinois.cs425.mp3.messages.Message;
+
 public class MulticastServerThread extends Thread {
 	private final MulticastServer multicastServer;
 

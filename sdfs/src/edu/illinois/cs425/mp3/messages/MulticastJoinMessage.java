@@ -1,64 +1,60 @@
-package edu.illinois.cs425.mp3;
+package edu.illinois.cs425.mp3.messages;
 
-public class MulticastLeaveMessage extends MulticastMessage {
+import edu.illinois.cs425.mp3.MemberNode;
+import edu.illinois.cs425.mp3.ProcessorThread;
+import edu.illinois.cs425.mp3.ServiceThread;
+
+public class MulticastJoinMessage extends MulticastMessage {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public MulticastJoinMessage(MemberNode sourceNode, MemberNode centralNode,
+			MemberNode alteredNode) {
+		super(sourceNode, centralNode, alteredNode);
+	}
+
 	@Override
-	public void processMessage() {
+	public void processMessage() {	
 		new ServiceThread(this) {
+
 			@Override
 			public void run() {
 				try {
-
 					ProcessorThread
 							.getServer()
 							.getLogger()
-							.info("Multicast leave message Processing  of node"
+							.info("Multicast join message Processing of node"
 									+ getMessage().getAlteredNode()
 											.getHostAddress());
-
 					if (mergeIntoMemberList()) {
 						Message message = getNewRelayMessage(ProcessorThread
 								.getServer().getNode(), getMessage()
 								.getSourceNode(), getMessage().getAlteredNode());
 						ProcessorThread.getServer().sendMessage(message,
 								ProcessorThread.getServer().getNeighborNode());
-						if (getMessage().getAlteredNode().compareTo(
-								ProcessorThread.getServer().getNeighborNode())) {
-							ProcessorThread.getServer().setNeighborNode(
-									getMessage().getSourceNode());
-						}
-
 					}
-
 				} catch (Exception e) {
+					e.printStackTrace();
 					ProcessorThread
 							.getServer()
 							.getLogger()
-							.info("Multicast leave message  Processing failed of node"
+							.info("Multicast Join Message processing failed  of node"
 									+ getMessage().getAlteredNode()
 											.getHostAddress());
-					e.printStackTrace();
 				}
 			}
 		}.start();
-
 	}
 
 	@Override
-	public RelayLeaveMessage getNewRelayMessage(MemberNode sourceNode,
+	public RelayMessage getNewRelayMessage(MemberNode sourceNode,
 			MemberNode centralNode, MemberNode alteredNode) {
-		// TODO Auto-generated method stub
-		return new RelayLeaveMessage(sourceNode, centralNode, alteredNode);
-	}
-
-	public MulticastLeaveMessage(MemberNode sourceNode, MemberNode centralNode,
-			MemberNode alteredNode) {
-		super(sourceNode, centralNode, alteredNode);
+		RelayJoinMessage message = new RelayJoinMessage(sourceNode,
+				centralNode, alteredNode);
+		return message;
 	}
 
 }

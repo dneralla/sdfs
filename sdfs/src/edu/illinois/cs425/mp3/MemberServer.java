@@ -20,6 +20,11 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
+import edu.illinois.cs425.mp3.messages.JoinMessage;
+import edu.illinois.cs425.mp3.messages.LeaveMessage;
+import edu.illinois.cs425.mp3.messages.Message;
+
 /*
  * Class for starting server. For each new request, a separate thread is spawned
  * for processing it. For sending heartbeats periodically, a separate thread is

@@ -1,5 +1,8 @@
 package edu.illinois.cs425.mp3;
 
+import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
+import edu.illinois.cs425.mp3.messages.Message;
+
 public class HeartBeatServiceThread extends Thread {
 	@Override
 	public void run() {

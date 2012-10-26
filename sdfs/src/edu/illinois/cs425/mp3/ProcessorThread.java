@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
+import edu.illinois.cs425.mp3.messages.Message;
+
 /*
  * Central class for processing messages.
  */
