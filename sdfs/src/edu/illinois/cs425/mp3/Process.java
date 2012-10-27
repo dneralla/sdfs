@@ -141,7 +141,7 @@ public class Process {
 		this.master = null;
 		this.globalList = new ArrayList<MemberNode>();
 
-		this.udpServer = new UDPServer();
+		this.udpServer = new UDPServer(this);
 		this.multicastServer = new MulticastServer(this);
 		this.tcpServer = new TCPServer();
 		tcpServer.start(TCP_SERVER_PORT);
@@ -237,7 +237,6 @@ public class Process {
 
 		}
 		logger.info("Staring logging");
-		new UDPMessageHandler(process).start();
 		// starting heartbeat thread
 		new HeartBeatServiceThread().start();
 		process.new UserCommandExecutor().start();

@@ -4,11 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.Date;
 import java.util.List;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 /*
  * Generic class for handling all UDP messages.
@@ -139,23 +138,19 @@ public abstract class Message extends GenericMessage implements Serializable {
 				|| this instanceof RelayJoinMessage;
 	}
 
-	public synchronized boolean mergeIntoMemberList() {
-
-		List<MemberNode> globalList = UDPMessageHandler
-				.getProcess().getGlobalList();
-		boolean isLatestUpdate = false;
-		Date timeStamp = getSourceNode().getTimeStamp();
+	public synchronized boolean mergeIntoMemberList(Process process) {
+		List<MemberNode> globalList = process.getGlobalList();
 		int index = globalList.indexOf(getAlteredNode());
 		MemberNode matchingNode = index == -1 ? null : globalList.get(index);
 		if (checkIsIntructionJoinVariant()) {
 			if (matchingNode == null
 					&&
 					/* && checkHasJoinArrivedLate() */
-					(UDPMessageHandler.getProcess().getRecentLeftNode() == null
-							|| !UDPMessageHandler.getProcess().getRecentLeftNode()
+					(process.getRecentLeftNode() == null
+							|| !process.getRecentLeftNode()
 									.equals(getAlteredNode()) || getAlteredNode()
 							.getTimeStamp()
-							.after(UDPMessageHandler.getProcess()
+							.after(process
 									.getRecentLeftNode().getTimeStamp()))) {
 				globalList.add(getAlteredNode());
 				return true;
@@ -170,15 +165,13 @@ public abstract class Message extends GenericMessage implements Serializable {
 					&& matchingNode.getTimeStamp().before(
 							getAlteredNode().getTimeStamp())) {
 				globalList.remove(getAlteredNode());
-				UDPMessageHandler.getProcess().setRecentLeftNode(getAlteredNode());
+				process.setRecentLeftNode(getAlteredNode());
 				return true;
 			} else {
-				UDPMessageHandler.getProcess().setRecentLeftNode(getAlteredNode());
+				process.setRecentLeftNode(getAlteredNode());
 			}
 
 		}
 		return false;
 	}
-
-	public abstract void processMessage();
 }

@@ -3,8 +3,7 @@ package edu.illinois.cs425.mp3.messages;
 import java.util.List;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ServiceThread;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 public class JoinAckMessage extends Message {
 
@@ -27,34 +26,28 @@ public class JoinAckMessage extends Message {
 		this.neighbourNode = neighbourNode;
 	}
 
-	public JoinAckMessage(MemberNode sourceNode, MemberNode centralNode, MemberNode alteredNode) {
+	public JoinAckMessage(MemberNode sourceNode, MemberNode centralNode,
+			MemberNode alteredNode) {
 		super(sourceNode, centralNode, alteredNode);
 	}
 
-
 	@Override
-	public void processMessage() {
-		new ServiceThread(this) {
-			@Override
-			public void run() {
-				try {
-					UDPMessageHandler.getProcess().getLogger().info("Join Acknowledging and updating neighbor as "+((JoinAckMessage)getMessage()).getNeighbourNode().getHostAddress());
-					UDPMessageHandler.getProcess().setNeighborNode(((JoinAckMessage)getMessage()).getNeighbourNode());
-
-                    UDPMessageHandler.getProcess().setGlobalList(getGlobalList());
-
-					MemberNode self = UDPMessageHandler.getProcess().getNode();
-					MulticastJoinMessage message = new MulticastJoinMessage(self,self,self);
-
-					UDPMessageHandler.getMulticastServer().multicastUpdate(message);
-
-				} catch (Exception e) {
-				 UDPMessageHandler.getProcess().getLogger().info("Updating neighbor or multicasting update failed");
-				 System.out.println("updating neighbor failed");
-				}
-			}
-		}.start();
-
+	public void processMessage(Process process) {
+		try {
+			process.getLogger().info(
+					"Join Acknowledging and updating neighbor as "
+							+ getNeighbourNode().getHostAddress());
+			process.setNeighborNode(getNeighbourNode());
+			process.setGlobalList(getGlobalList());
+			MemberNode self = process.getNode();
+			MulticastJoinMessage message = new MulticastJoinMessage(self, self,
+					self);
+			process.getMulticastServer().multicastUpdate(message);
+		} catch (Exception e) {
+			process.getLogger().info(
+					"Updating neighbor or multicasting update failed");
+			System.out.println("updating neighbor failed");
+		}
 	}
 
 }

@@ -6,7 +6,6 @@ public class RelayFailureMessage extends RelayMessage {
 	@Override
 	public Message getNewMulticastMessage(MemberNode sourceNode,
 			MemberNode centralNode, MemberNode alteredNode) {
-		// TODO Auto-generated method stub
 		return new MulticastFailureMessage(sourceNode, centralNode, alteredNode);
 	}
 

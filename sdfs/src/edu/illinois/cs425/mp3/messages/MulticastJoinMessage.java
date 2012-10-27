@@ -1,8 +1,7 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ServiceThread;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 public class MulticastJoinMessage extends MulticastMessage {
 
@@ -17,36 +16,23 @@ public class MulticastJoinMessage extends MulticastMessage {
 	}
 
 	@Override
-	public void processMessage() {
-		new ServiceThread(this) {
-
-			@Override
-			public void run() {
-				try {
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Multicast join message Processing of node"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
-					if (mergeIntoMemberList()) {
-						Message message = getNewRelayMessage(UDPMessageHandler
-								.getProcess().getNode(), getMessage()
-								.getSourceNode(), getMessage().getAlteredNode());
-						UDPMessageHandler.sendMessage(message,
-								UDPMessageHandler.getProcess().getNeighborNode());
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Multicast Join Message processing failed  of node"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
-				}
+	public void processMessage(Process process) {
+		try {
+			process.getLogger().info(
+					"Multicast join message Processing of node"
+							+ getAlteredNode().getHostAddress());
+			if (mergeIntoMemberList(process)) {
+				Message message = getNewRelayMessage(process.getNode(),
+						getSourceNode(), getAlteredNode());
+				process.getUdpServer().sendMessage(message,
+						process.getNeighborNode());
 			}
-		}.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+			process.getLogger().info(
+					"Multicast Join Message processing failed  of node"
+							+ getAlteredNode().getHostAddress());
+		}
 	}
 
 	@Override

@@ -1,8 +1,7 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ServiceThread;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 public class JoinMessage extends Message {
 	private static final long serialVersionUID = 1L;
@@ -13,50 +12,34 @@ public class JoinMessage extends Message {
 	}
 
 	@Override
-	public void processMessage() {
-		new ServiceThread(this) {
+	public void processMessage(Process process) {
+		try {
+			process.getLogger().info(
+					"Servicing Join request of node"
+							+ getSourceNode().getHostAddress());
 
-			@Override
-			public void run() {
-				try {
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Servicing Join request of node"
-									+ getMessage().getSourceNode()
-											.getHostAddress());
+			mergeIntoMemberList(process);
 
-					((JoinMessage) getMessage()).mergeIntoMemberList();
+			MemberNode oldNeighbourNode = process.getNeighborNode();
+			process.setNeighborNode(getSourceNode());
 
-					MemberNode oldNeighbourNode = UDPMessageHandler.getProcess()
-							.getNeighborNode();
-					UDPMessageHandler.getProcess().setNeighborNode(
-							getMessage().getSourceNode());
+			Message ackMessage = new JoinAckMessage(process.getNode(), null,
+					null);
 
-					Message ackMessage = new JoinAckMessage(UDPMessageHandler
-							.getProcess().getNode(), null, null);
+			((JoinAckMessage) ackMessage).setNeighbourNode(oldNeighbourNode);
+			((JoinAckMessage) ackMessage)
+					.setGlobalList(process.getGlobalList());
 
-					((JoinAckMessage) ackMessage)
-							.setNeighbourNode(oldNeighbourNode);
-					((JoinAckMessage) ackMessage).setGlobalList(UDPMessageHandler
-							.getProcess().getGlobalList());
+			process.getUdpServer().sendMessage(ackMessage, getSourceNode());
 
-					UDPMessageHandler.sendMessage(ackMessage,
-							getMessage().getSourceNode());
+		} catch (Exception e) {
 
-				} catch (Exception e) {
-
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Processing join failed of node"
-									+ getMessage().getSourceNode()
-											.getHostAddress());
-					System.out.println("Processing join failed");
-					e.printStackTrace();
-				}
-			}
-		}.start();
+			process.getLogger().info(
+					"Processing join failed of node"
+							+ getSourceNode().getHostAddress());
+			System.out.println("Processing join failed");
+			e.printStackTrace();
+		}
 
 	}
 }

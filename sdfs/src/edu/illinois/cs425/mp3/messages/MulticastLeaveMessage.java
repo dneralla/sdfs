@@ -1,8 +1,7 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ServiceThread;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 public class MulticastLeaveMessage extends MulticastMessage {
 
@@ -12,48 +11,31 @@ public class MulticastLeaveMessage extends MulticastMessage {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void processMessage() {
-		new ServiceThread(this) {
-			@Override
-			public void run() {
-				try {
+	public void processMessage(Process process) {
 
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Multicast leave message Processing  of node"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
+		try {
 
-					if (mergeIntoMemberList()) {
-						Message message = getNewRelayMessage(UDPMessageHandler
-								.getProcess().getNode(), getMessage()
-								.getSourceNode(), getMessage().getAlteredNode());
-						UDPMessageHandler.sendMessage(
-								message,
-								UDPMessageHandler.getProcess()
-										.getNeighborNode());
-						if (getMessage().getAlteredNode().compareTo(
-								UDPMessageHandler.getProcess()
-										.getNeighborNode())) {
-							UDPMessageHandler.getProcess().setNeighborNode(
-									getMessage().getSourceNode());
-						}
+			process.getLogger().info(
+					"Multicast leave message Processing  of node"
+							+ getAlteredNode().getHostAddress());
 
-					}
-
-				} catch (Exception e) {
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Multicast leave message  Processing failed of node"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
-					e.printStackTrace();
+			if (mergeIntoMemberList(process)) {
+				Message message = getNewRelayMessage(process.getNode(),
+						getSourceNode(), getAlteredNode());
+				process.getUdpServer().sendMessage(message,
+						process.getNeighborNode());
+				if (getAlteredNode().compareTo(process.getNeighborNode())) {
+					process.setNeighborNode(getSourceNode());
 				}
-			}
-		}.start();
 
+			}
+
+		} catch (Exception e) {
+			process.getLogger().info(
+					"Multicast leave message  Processing failed of node"
+							+ getAlteredNode().getHostAddress());
+			e.printStackTrace();
+		}
 	}
 
 	@Override

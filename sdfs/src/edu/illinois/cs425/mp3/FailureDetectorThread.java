@@ -23,22 +23,22 @@ public class FailureDetectorThread extends ServiceThread {
 	public void run() {
 		while (true) {
 			if (System.currentTimeMillis()
-					- UDPMessageHandler.getProcess()
+					- MessageHandler.getProcess()
 							.getLastReceivedHeartBeatTime() > 3 * 1000) {
 
 				System.out.println("failure Detected of node"
-						+ UDPMessageHandler.getProcess().getHeartbeatSendingNode()
+						+ MessageHandler.getProcess().getHeartbeatSendingNode()
 								.getHostAddress());
-				UDPMessageHandler
+				MessageHandler
 						.getProcess()
 						.getLogger()
 						.info("failure Detected of node"
-								+ UDPMessageHandler.getProcess()
+								+ MessageHandler.getProcess()
 										.getHeartbeatSendingNode()
 										.getHostAddress());
-				processFailure(UDPMessageHandler.getProcess()
+				processFailure(MessageHandler.getProcess()
 						.getHeartbeatSendingNode());
-				UDPMessageHandler.toStartHeartBeating = false;
+				MessageHandler.toStartHeartBeating = false;
 
 				this.stop();
 			}
@@ -49,18 +49,18 @@ public class FailureDetectorThread extends ServiceThread {
 	public void processFailure(MemberNode node) {
 		try {
 
-			MemberNode self = UDPMessageHandler.getProcess().getNode();
+			MemberNode self = MessageHandler.getProcess().getNode();
 
 			node.setTimeStamp(new Date());
 			MulticastFailureMessage message = new MulticastFailureMessage(self,
 					self, node);
-			UDPMessageHandler.getMulticastServer().multicastUpdate(message);
+			MessageHandler.getMulticastServer().multicastUpdate(message);
 			message.mergeIntoMemberList();
-			UDPMessageHandler.getMulticastServer().multicastUpdate(message);
+			MessageHandler.getMulticastServer().multicastUpdate(message);
 		} catch (Exception e) {
 			System.out.println("processing failure failed of node"
 					+ node.getHostAddress());
-			UDPMessageHandler
+			MessageHandler
 					.getProcess()
 					.getLogger()
 					.info("processing failure failed of node"

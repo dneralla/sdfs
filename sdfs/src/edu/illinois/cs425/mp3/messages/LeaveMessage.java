@@ -1,8 +1,7 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
-import edu.illinois.cs425.mp3.ServiceThread;
+import edu.illinois.cs425.mp3.Process;
 
 public class LeaveMessage extends Message {
 
@@ -12,43 +11,25 @@ public class LeaveMessage extends Message {
 	}
 
 	@Override
-	public void processMessage() {
-		new ServiceThread(this) {
-			@Override
-			public void run() {
-				try {
+	public void processMessage(Process process) {
+		try {
+			process.getLogger().info(
+					"Processing Leave message"
+							+ getAlteredNode().getHostAddress());
+			mergeIntoMemberList(process);
 
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Processing Leave message"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
-					mergeIntoMemberList();
+			MemberNode self = process.getNode();
+			MulticastLeaveMessage message = new MulticastLeaveMessage(self,
+					self, getAlteredNode());
+			process.setRecentLeftNode(getAlteredNode());
+			process.getMulticastServer().multicastUpdate(message);
 
-					MemberNode self = UDPMessageHandler.getProcess().getNode();
-					// TODO: in case of failure detection, altered is faulty
-					// node
-					MulticastLeaveMessage message = new MulticastLeaveMessage(
-							self, self, getMessage().getAlteredNode());
-					UDPMessageHandler.getProcess().setRecentLeftNode(
-							getAlteredNode());
-					UDPMessageHandler.getMulticastServer().multicastUpdate(
-							message);
-
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Leave Message processing failed or multicast update failed of node"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
-					e.printStackTrace();
-				}
-			}
-		}.start();
-
+		} catch (Exception e) {
+			process.getLogger().info(
+					"Leave Message processing failed or multicast update failed of node"
+							+ getAlteredNode().getHostAddress());
+			e.printStackTrace();
+		}
 	}
 
 }

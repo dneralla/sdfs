@@ -7,28 +7,28 @@ public class HeartBeatServiceThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			Message m = new HeartBeatMessage(UDPMessageHandler.getProcess()
+			Message m = new HeartBeatMessage(MessageHandler.getProcess()
 					.getNode(), null, null);
 			while (true) {
 
-				UDPMessageHandler
+				MessageHandler
 						.getProcess()
 						.getLogger()
 						.info("HeartBeat Sending to"
-								+ UDPMessageHandler.getProcess().getNeighborNode()
+								+ MessageHandler.getProcess().getNeighborNode()
 										.getHostAddress().toString());
-				UDPMessageHandler.getProcess().sendMessage(m,
-						UDPMessageHandler.getProcess().getNeighborNode());
+				MessageHandler.getProcess().sendMessage(m,
+						MessageHandler.getProcess().getNeighborNode());
 				Thread.sleep(100);
 			}
 		} catch (Exception e) {
 
 			System.out.println("Error in sending hearbeat message");
-			UDPMessageHandler
+			MessageHandler
 					.getProcess()
 					.getLogger()
 					.info("Error in sending heart beat message to"
-							+ UDPMessageHandler.getProcess().getNeighborNode()
+							+ MessageHandler.getProcess().getNeighborNode()
 									.getHostAddress());
 		}
 	}

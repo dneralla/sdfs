@@ -1,42 +1,28 @@
 package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.ServiceThread;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 public class MulticastFailureMessage extends MulticastMessage {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void processMessage() {
-		new ServiceThread(this) {
-			@Override
-			public void run() {
-				try {
-					if (mergeIntoMemberList()) {
-						Message message = getNewRelayMessage(UDPMessageHandler
-								.getProcess().getNode(), getMessage()
-								.getSourceNode(), getMessage().getAlteredNode());
-						UDPMessageHandler.sendMessage(message,
-								UDPMessageHandler.getProcess().getNeighborNode());
-						if (getMessage().getAlteredNode().compareTo(
-								UDPMessageHandler.getProcess().getNeighborNode())) {
-							UDPMessageHandler.getProcess().setNeighborNode(
-									getMessage().getSourceNode());
-						}
-					}
-
-				} catch (Exception e) {
-					UDPMessageHandler
-							.getProcess()
-							.getLogger()
-							.info("Multicast failure receieve  Processing failed of node"
-									+ getMessage().getAlteredNode()
-											.getHostAddress());
+	public void processMessage(Process process) {
+		try {
+			if (mergeIntoMemberList(process)) {
+				Message message = getNewRelayMessage(process.getNode(),
+						getSourceNode(), getAlteredNode());
+				process.getUdpServer().sendMessage(message, process.getNeighborNode());
+				if (getAlteredNode().compareTo(process.getNeighborNode())) {
+					process.setNeighborNode(getSourceNode());
 				}
 			}
-		}.start();
 
+		} catch (Exception e) {
+			process.getLogger().info(
+					"Multicast failure receieve  Processing failed of node"
+							+ getAlteredNode().getHostAddress());
+		}
 	}
 
 	public MulticastFailureMessage(MemberNode sourceNode,

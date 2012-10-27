@@ -2,7 +2,8 @@ package edu.illinois.cs425.mp3.messages;
 
 import edu.illinois.cs425.mp3.FailureDetectorThread;
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.UDPMessageHandler;
+import edu.illinois.cs425.mp3.MessageHandler;
+import edu.illinois.cs425.mp3.Process;
 
 public class HeartBeatMessage extends Message {
 
@@ -14,33 +15,31 @@ public class HeartBeatMessage extends Message {
 	}
 
 	@Override
-	public void processMessage() {
-		UDPMessageHandler
-				.getProcess()
-				.getLogger()
+	public void processMessage(Process process) {
+		process.getLogger()
 				.info("Hear tBeatReceieved from host"
 						+ this.getSourceNode().getHostAddress().toString());
 
-		if (!UDPMessageHandler.toStartHeartBeating) {
-			UDPMessageHandler.getProcess().setTimer(new FailureDetectorThread());
+		if (!process.toStartHeartBeating) {
+			process.setTimer(new FailureDetectorThread());
 
-			UDPMessageHandler.getProcess().getFailureDetector().start();
-			UDPMessageHandler.toStartHeartBeating = true;
+			process.getFailureDetector().start();
+			process.toStartHeartBeating = true;
 		}
 		updateTimer();
 	}
 
 	public void updateTimer() {
-		if (!(UDPMessageHandler.getProcess().getHeartbeatSendingNode()
+		if (!(process.getHeartbeatSendingNode()
 				.compareTo(this.getSourceNode()))) {
 
-			UDPMessageHandler.getProcess().setHeartbeatSendingNode(
+			process.setHeartbeatSendingNode(
 					this.getSourceNode());
-			UDPMessageHandler.toStartHeartBeating = false;
-			UDPMessageHandler.getProcess().getFailureDetector().stop();
+			MessageHandler.toStartHeartBeating = false;
+			process.getFailureDetector().stop();
 
 		}
-		UDPMessageHandler.getProcess().setLastReceivedHeartBeatTime(
+		process.setLastReceivedHeartBeatTime(
 				System.currentTimeMillis());
 	}
 
