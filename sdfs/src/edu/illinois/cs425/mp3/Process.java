@@ -16,6 +16,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import edu.illinois.cs425.mp3.messages.CoordinatorMessage;
 import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
 import edu.illinois.cs425.mp3.messages.JoinMessage;
@@ -42,7 +43,6 @@ public class Process {
 	private volatile List<MemberNode> globalList;
 	private volatile Logger logger;
 	private volatile MemberNode recentLeftNode;
-	private FailureDetectorThread failureDetector;
 	private MemberNode heartbeatSendingNode;
 	private boolean isInRing = false;
 
@@ -94,14 +94,6 @@ public class Process {
 		this.isInRing = isInRing;
 	}
 
-	public FailureDetectorThread getFailureDetector() {
-		return failureDetector;
-	}
-
-	public void setTimer(FailureDetectorThread failureDetector) {
-		this.failureDetector = failureDetector;
-	}
-
 	public MemberNode getRecentLeftNode() {
 		return recentLeftNode;
 	}
@@ -143,7 +135,7 @@ public class Process {
 
 		this.udpServer = new UDPServer(this);
 		this.multicastServer = new MulticastServer(this);
-		this.tcpServer = new TCPServer();
+		this.tcpServer = new TCPServer(this);
 		tcpServer.start(TCP_SERVER_PORT);
 	}
 
@@ -238,7 +230,9 @@ public class Process {
 		}
 		logger.info("Staring logging");
 		// starting heartbeat thread
-		new HeartBeatServiceThread().start();
+		int T = 500;
+		new HeartBeatServiceThread(process, T).start();
+		new FailureDetectorThread(process, 3*T).start();
 		process.new UserCommandExecutor().start();
 	}
 
@@ -308,6 +302,25 @@ public class Process {
 
 				e.printStackTrace();
 			}
+		}
+
+	}
+
+	public MemberNode electMaster() {
+		MemberNode master = getNode();
+		for(MemberNode node: globalList) {
+			if(node.isGreater(master)) {
+				master = node;
+			}
+		}
+		return master;
+	}
+
+	public void startMasterElection() {
+		CoordinatorMessage message = new CoordinatorMessage(electMaster());
+		for(MemberNode node: globalList) {
+			if(!node.equals(this.getNode()))
+			this.tcpServer.sendMessage(message, node.getHostAddress(), TCP_SERVER_PORT);
 		}
 
 	}

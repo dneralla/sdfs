@@ -1,6 +1,5 @@
 package edu.illinois.cs425.mp3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -32,12 +31,13 @@ public class TCPServerThread extends Thread {
 			GenericMessage message = (GenericMessage) in.readObject();
 
 			// 2. should catch timed out exception here
-			message.processMessage(null);
+			message.processMessage(process);
 
 			out.close();
 			in.close();
 			socket.close();
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
