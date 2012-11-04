@@ -7,10 +7,12 @@ import edu.illinois.cs425.mp3.Process;
 public class HeartBeatMessage extends Message {
 
 	private static final long serialVersionUID = 1L;
+	private final long sentTime;
 
 	public HeartBeatMessage(MemberNode sourceNode, MemberNode centralNode,
 			MemberNode alteredNode) {
 		super(sourceNode, centralNode, alteredNode);
+		sentTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -18,8 +20,7 @@ public class HeartBeatMessage extends Message {
 		process.getLogger()
 				.info("Hear tBeatReceieved from host"
 						+ this.getSourceNode().getHostAddress().toString());
-		FailureDetectorThread.setLastReceivedHeartBeatTime(
-				System.currentTimeMillis());
+		FailureDetectorThread.setLastReceivedHeartBeatTime(sentTime);
 	}
 
 }
