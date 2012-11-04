@@ -19,7 +19,12 @@ public class MessageHandler extends Thread {
 
 	@Override
 	public void run() {
-		message.processMessage(null);
+		try {
+			message.processMessage(null);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
