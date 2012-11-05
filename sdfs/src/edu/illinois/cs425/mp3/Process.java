@@ -35,6 +35,8 @@ public class Process {
 
 	public static final int UDP_SERVER_PORT = 4447;
 	public static final int TCP_SERVER_PORT = 4448;
+	
+	private int chunkSize = 12 ;
 
 	private MemberNode self;
 	private MemberNode master;
@@ -45,6 +47,8 @@ public class Process {
 	private volatile MemberNode recentLeftNode;
 	private MemberNode heartbeatSendingNode;
 	private boolean isInRing = false;
+	
+	private FileSystemManager fsManager;
 
 	private MulticastServer multicastServer;
 	private TCPServer tcpServer;
@@ -136,6 +140,7 @@ public class Process {
 		this.udpServer = new UDPServer(this);
 		this.multicastServer = new MulticastServer(this);
 		this.tcpServer = new TCPServer(this);
+		this.fsManager = new FileSystemManager(this);
 		tcpServer.start(TCP_SERVER_PORT);
 	}
 
@@ -239,6 +244,7 @@ public class Process {
 	private void startServers() throws IOException {
 		udpServer.start(UDP_SERVER_PORT);
         tcpServer.start(TCP_SERVER_PORT);
+      
 	}
 
 	public void sendMessage(GenericMessage message, MemberNode node) {
@@ -287,7 +293,15 @@ public class Process {
 						getLogger().info("Leave Message sent");
 					} else if (inputLine.startsWith("print")) {
 						printNodes();
-					} else if (inputLine.equals("next")) {
+					 }else if(inputLine.startsWith("put")) 
+					 {
+						 String localFileName = inputLine.substring(
+									inputLine.indexOf(" ") + 1,
+									inputLine.lastIndexOf(" "));
+						int remoteFileName = Integer.valueOf(inputLine
+									.substring(inputLine.lastIndexOf(" ") + 1));
+					 }
+			        else if (inputLine.equals("next")) {
 						System.out.println("Neighbour Port: "
 								+ getNeighborNode().getDescription());
 					} else if (inputLine.equals("help")) {
@@ -296,6 +310,7 @@ public class Process {
 					} else if (inputLine.equals("exit")) {
 						System.exit(0);
 					}
+					
 					System.out.print("[Please Enter Command]$ ");
 				}
 			} catch (Exception e) {
@@ -324,4 +339,14 @@ public class Process {
 		}
 
 	}
+
+	public int getChunkSize() {
+		return chunkSize;
+	}
+
+	public void setChunkSize(int chunkSize) {
+		this.chunkSize = chunkSize;
+	}
+
+	
 }
