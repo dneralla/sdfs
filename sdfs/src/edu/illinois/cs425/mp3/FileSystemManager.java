@@ -1,19 +1,12 @@
 package edu.illinois.cs425.mp3;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.Reader;
-import java.io.Writer;
 
-import edu.illinois.cs425.mp3.messages.LoadBalanceMasterMessage;
-import edu.illinois.cs425.mp3.messages.LoadBalanceMessage;
+
 
 public class FileSystemManager {
 	
 	private Process process;
-	LoadBalanceMessage message;
+	//LoadBalanceMessage message;
 	
 	public FileSystemManager(Process process)
 	{  
