@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import edu.illinois.cs425.mp3.messages.GenericMessage;
+import edu.illinois.cs425.mp3.messages.RequestMessage;
 
 public class TCPServerThread extends Thread {
 	private Process process = null;
@@ -30,9 +31,11 @@ public class TCPServerThread extends Thread {
 
 			GenericMessage message = (GenericMessage) in.readObject();
 
-			// 2. should catch timed out exception here
-			message.processMessage(process);
+			if(message instanceof RequestMessage) {
+				((RequestMessage) message).setOutputStream(out);
+			}
 
+			message.processMessage(process);
 			out.close();
 			in.close();
 			socket.close();

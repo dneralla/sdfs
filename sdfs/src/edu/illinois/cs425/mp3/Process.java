@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import edu.illinois.cs425.mp3.messages.CoordinatorMessage;
-import edu.illinois.cs425.mp3.messages.FileTransferRequestMessage;
 import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
 import edu.illinois.cs425.mp3.messages.JoinMessage;
@@ -348,29 +347,11 @@ public class Process {
 		this.chunkSize = chunkSize;
 	}
 
-	public boolean send(FileTransferRequestMessage message, InetAddress source, long timeOut) {
-		 long start = System.currentTimeMillis();
-		 tcpServer.sendMessage(message, source, TCP_SERVER_PORT);
-		 FileIdentifier id = new FileIdentifier(message.fileName, message.chunkId, source);
-		 while(System.currentTimeMillis() - start < timeOut) {
-              if(fileIndexer.isPresent(id)) {
-           	   return true;
-              }
-		 }
-        return false;
-	}
-
 	public void ensureReplicaCount() {
-		while(!receivedFileIndexFromAllNodes());
-	}
 
-	private boolean receivedFileIndexFromAllNodes() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	public FileIndexer getFileIndexer() {
 		return fileIndexer;
 	}
-
 }

@@ -8,9 +8,10 @@ public class FileIdentifier {
 	private String sdfsFileName;
 	private InetAddress chunkAddress;
 
-	public FileIdentifier(int chunkId, String sdfsFileName, String localFileName) {
+	public FileIdentifier(int chunkId, String sdfsFileName, InetAddress chunkAddress) {
 		this.chunkId = chunkId;
 		this.sdfsFileName = sdfsFileName;
+		this.chunkAddress = chunkAddress;
 	}
 
 	public int getChunkId() {
