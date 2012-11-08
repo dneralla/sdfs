@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import edu.illinois.cs425.mp3.messages.CoordinatorMessage;
+import edu.illinois.cs425.mp3.messages.FileTransferRequestMessage;
 import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
 import edu.illinois.cs425.mp3.messages.JoinMessage;
@@ -35,7 +36,7 @@ public class Process {
 
 	public static final int UDP_SERVER_PORT = 4447;
 	public static final int TCP_SERVER_PORT = 4448;
-	
+
 	private int chunkSize = 12 ;
 
 	private MemberNode self;
@@ -47,8 +48,10 @@ public class Process {
 	private volatile MemberNode recentLeftNode;
 	private MemberNode heartbeatSendingNode;
 	private boolean isInRing = false;
-	
-	private FileSystemManager fsManager;
+
+	private volatile FileIndexer fileIndexer;
+	private final FileSystemManager fsManager;
+
 
 	private MulticastServer multicastServer;
 	private TCPServer tcpServer;
@@ -141,6 +144,7 @@ public class Process {
 		this.multicastServer = new MulticastServer(this);
 		this.tcpServer = new TCPServer(this);
 		this.fsManager = new FileSystemManager(this);
+		this.fileIndexer = new FileIndexerImpl(this);
 		tcpServer.start(TCP_SERVER_PORT);
 	}
 
@@ -244,7 +248,7 @@ public class Process {
 	private void startServers() throws IOException {
 		udpServer.start(UDP_SERVER_PORT);
         tcpServer.start(TCP_SERVER_PORT);
-      
+
 	}
 
 	public void sendMessage(GenericMessage message, MemberNode node) {
@@ -293,9 +297,9 @@ public class Process {
 						getLogger().info("Leave Message sent");
 					} else if (inputLine.startsWith("print")) {
 						printNodes();
-					 }else if(inputLine.startsWith("put")) 
+					 }else if(inputLine.startsWith("put"))
 					 {
-						 
+
 					 }
 			        else if (inputLine.equals("next")) {
 						System.out.println("Neighbour Port: "
@@ -306,7 +310,7 @@ public class Process {
 					} else if (inputLine.equals("exit")) {
 						System.exit(0);
 					}
-					
+
 					System.out.print("[Please Enter Command]$ ");
 				}
 			} catch (Exception e) {
@@ -344,5 +348,29 @@ public class Process {
 		this.chunkSize = chunkSize;
 	}
 
-	
+	public boolean send(FileTransferRequestMessage message, InetAddress source, long timeOut) {
+		 long start = System.currentTimeMillis();
+		 tcpServer.sendMessage(message, source, TCP_SERVER_PORT);
+		 FileIdentifier id = new FileIdentifier(message.fileName, message.chunkId, source);
+		 while(System.currentTimeMillis() - start < timeOut) {
+              if(fileIndexer.isPresent(id)) {
+           	   return true;
+              }
+		 }
+        return false;
+	}
+
+	public void ensureReplicaCount() {
+		while(!receivedFileIndexFromAllNodes());
+	}
+
+	private boolean receivedFileIndexFromAllNodes() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public FileIndexer getFileIndexer() {
+		return fileIndexer;
+	}
+
 }

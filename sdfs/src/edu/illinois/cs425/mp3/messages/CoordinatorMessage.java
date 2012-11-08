@@ -11,5 +11,9 @@ public class CoordinatorMessage extends GenericMessage {
 	@Override
 	public void processMessage(Process process) throws Exception {
 		process.setMaster(masterNode);
+		process.getTcpServer().sendMessage(new FileIndexerMessage(process.getFileIndexer()), masterNode.getHostAddress(), process.TCP_SERVER_PORT);
+		if(process.getNode().equals(masterNode)) {
+			process.ensureReplicaCount();
+		}
 	}
 }
