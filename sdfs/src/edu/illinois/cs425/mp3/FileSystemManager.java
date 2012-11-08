@@ -27,21 +27,11 @@ public class FileSystemManager {
 	}
 
 	
-   public void chunkAndSend(String localFile,String outputFile)
+   public void putChunk(String localFile,String sdfsFile,int chunkId)
    {
-	   try {
-		File f = new File(localFile);
-		long noChunks = (f.length()/this.getProcess().getChunkSize()) +1 ;
-       for(int i=0;i<noChunks;i++)
-       {
-    	   LoadBalanceMasterMessage lbm = new LoadBalanceMasterMessage(process.getNode(),null,null,localFile,i,outputFile,this.process.getChunkSize());
-       	    process.getTcpServer().sendMessage(lbm,process.getMaster().getHostAddress(),Process.TCP_SERVER_PORT);
-       }
-        
-	 } catch (Exception e) {
-	  e.printStackTrace();
-	}
-	   
+//	   LoadBalanceMasterMessage lbm = new LoadBalanceMasterMessage(process.getNode(),null,null,localFile,i,outputFile,this.process.getChunkSize());
+//  	   process.getTcpServer().sendMessage(lbm,process.getMaster().getHostAddress(),Process.TCP_SERVER_PORT);
+//	   
   }	
    
   
