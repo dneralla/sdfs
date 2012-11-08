@@ -295,11 +295,7 @@ public class Process {
 						printNodes();
 					 }else if(inputLine.startsWith("put")) 
 					 {
-						 String localFileName = inputLine.substring(
-									inputLine.indexOf(" ") + 1,
-									inputLine.lastIndexOf(" "));
-						int remoteFileName = Integer.valueOf(inputLine
-									.substring(inputLine.lastIndexOf(" ") + 1));
+						 
 					 }
 			        else if (inputLine.equals("next")) {
 						System.out.println("Neighbour Port: "
