@@ -38,7 +38,7 @@ public class LeaveMessage extends Message {
 
 		// sending request to master server for re-replication
 		if(self.equals(process.getMaster())) {
-			 process.getTcpServer().sendMessage(new ReplicateMessage(getAlteredNode().getHostAddress()), process.getMaster().getHostAddress(), process.TCP_SERVER_PORT);
+			 process.getTcpServer().sendMessage(new ReplicateMessage(getAlteredNode()), process.getMaster().getHostAddress(), process.TCP_SERVER_PORT);
              process.replicateNode(getAlteredNode().getHostAddress());
 		}
 

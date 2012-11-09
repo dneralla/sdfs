@@ -37,8 +37,8 @@ public class LoadBalanceNodeMessage extends Message implements Serializable {
 	    char c[] = new char[process.getChunkSize()];
 	    FileReader r = new FileReader(new File(this.fileName));
 	    r.read(c, this.chunkId,process.getChunkSize());
-	    PutChunkMessage cm = new PutChunkMessage(process.getNode(),null,null,c,this.chunkId,this.sdfsFileName);
-        process.getTcpServer().sendMessage(cm, freeNode, Process.TCP_SERVER_PORT);
+	    //PutChunkMessage cm = new PutChunkMessage(process.getNode(),null,null,c,this.chunkId,this.sdfsFileName);
+        //process.getTcpServer().sendMessage(cm, freeNode, Process.TCP_SERVER_PORT);
         r.close();
         
         this.remreplicaCount--;

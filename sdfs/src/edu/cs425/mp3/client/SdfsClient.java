@@ -13,7 +13,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 import edu.illinois.cs425.mp3.MemberNode;
-import edu.illinois.cs425.mp3.messages.ChunkMessage;
+import edu.illinois.cs425.mp3.messages.PutChunkMessage;
 import edu.illinois.cs425.mp3.messages.DeleteMessage;
 import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.GetFileMessage;

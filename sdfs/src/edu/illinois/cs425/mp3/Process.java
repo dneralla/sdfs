@@ -18,6 +18,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import edu.illinois.cs425.mp3.messages.PutChunkMessage;
 import edu.illinois.cs425.mp3.messages.ChunkTransferMessage;
 import edu.illinois.cs425.mp3.messages.CoordinatorMessage;
 import edu.illinois.cs425.mp3.messages.GenericMessage;
@@ -352,6 +353,16 @@ public class Process {
 	}
 
 	//
+	public void createReplica(String chunk, FileIdentifier fid) throws ClassNotFoundException {
+		PutChunkMessage message;
+		List<InetAddress> nodes;
+		do {
+		nodes = fileIndexer.getSourceAndDestination(fid);
+		message = new PutChunkMessage(chunk, fid.getChunkId(), fid.getSdfsFileName());
+		}while(tcpServer.sendRequestMessage(message, nodes.get(0), TCP_SERVER_PORT)!=null);
+		fileIndexer.merge(new FileIdentifier(fid.getChunkId(), fid.getSdfsFileName(), nodes.get(1)));
+	}
+
 	public void createReplica(FileIdentifier fid) throws ClassNotFoundException {
 		ChunkTransferMessage message;
 		List<InetAddress> nodes;

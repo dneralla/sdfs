@@ -9,6 +9,7 @@ public class ChunkTransferMessage extends RequestMessage {
 	String fileName;
 	int chunkId;
 	InetAddress destination;
+
 	public ChunkTransferMessage(String fileName, int chunkId, InetAddress destination) {
 		this.fileName = fileName;
 		this.chunkId = chunkId;
@@ -18,7 +19,7 @@ public class ChunkTransferMessage extends RequestMessage {
 	@Override
 	public void processMessage(Process process) throws Exception {
 		    String chunk = FileSystemManager.getChunk(fileName, chunkId);
-			outputStream.writeObject(process.getTcpServer().sendRequestMessage(new ChunkMessage(chunk, chunkId, fileName), destination, Process.TCP_SERVER_PORT));
+			outputStream.writeObject(process.getTcpServer().sendRequestMessage(new PutChunkMessage(chunk, chunkId, fileName), destination, Process.TCP_SERVER_PORT));
 	}
 
 }
