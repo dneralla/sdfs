@@ -15,6 +15,7 @@ public class ChunkReceivedMessage extends RequestMessage {
 		this.chunkId = chunkId;
 		this.fileName = fileName;
 		this.source = source;
+
 	}
 
 	@Override
