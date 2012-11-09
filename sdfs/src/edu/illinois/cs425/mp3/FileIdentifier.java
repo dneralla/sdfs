@@ -48,4 +48,13 @@ public class FileIdentifier {
 
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof FileIdentifier))
+			return false;
+		else
+			return chunkId==((FileIdentifier)o).getChunkId() && sdfsFileName == ((FileIdentifier)o).sdfsFileName;
+
+	}
+
 }

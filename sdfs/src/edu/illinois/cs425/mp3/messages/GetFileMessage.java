@@ -5,13 +5,16 @@ import java.io.Serializable;
 import edu.illinois.cs425.mp3.MemberNode;
 import edu.illinois.cs425.mp3.Process;
 
-public class GetFileMessage extends RequestMessage implements Serializable{
+public class GetFileMessage extends Message implements Serializable{
 	
 	String sdfsFileName;
 	
-	public GetFileMessage(String sdfsFileName)
+	public GetFileMessage(MemberNode sourceNode, MemberNode centralNode,
+			MemberNode alteredNode,char[] chunkContent,int chunkId,String sdfsFileName)
 	{
+		super(sourceNode, centralNode,alteredNode);
 		this.sdfsFileName=sdfsFileName;
+	   
 	}
 	
 	private static final long serialVersionUID = 1L;

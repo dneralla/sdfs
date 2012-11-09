@@ -10,7 +10,7 @@ public class DeleteMessage extends Message implements Serializable{
 	String sdfsFileName;
 	
 	public DeleteMessage(MemberNode sourceNode, MemberNode centralNode,
-			MemberNode alteredNode,String sdfsFileName)
+			MemberNode alteredNode,char[] chunkContent,int chunkId,String sdfsFileName)
 	{
 		super(sourceNode, centralNode,alteredNode);
 		this.sdfsFileName=sdfsFileName;

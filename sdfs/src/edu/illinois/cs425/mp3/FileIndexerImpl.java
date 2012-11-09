@@ -28,7 +28,7 @@ public class FileIndexerImpl implements FileIndexer {
 	}
 
 	@Override
-	public void merge(FileIndexer fileIndexer) {
+	public synchronized void merge(FileIndexer fileIndexer) {
 		Iterator<FileIdentifier> it = ((FileIndexerImpl) fileIndexer)
 				.getFileList().iterator();
 		while (it.hasNext())
@@ -36,7 +36,7 @@ public class FileIndexerImpl implements FileIndexer {
 	}
 
 	@Override
-	public void merge(FileIdentifier fileIdentifier) {
+	public synchronized void merge(FileIdentifier fileIdentifier) {
 		Iterator<FileIdentifier> it = fileList.iterator();
 		FileIdentifier temp;
 		while (it.hasNext()) {
@@ -48,14 +48,13 @@ public class FileIndexerImpl implements FileIndexer {
 	}
 
 	@Override
-	public List<FileIdentifier> groupBy(String fileName) {
-
+	public List<FileIdentifier> groupBy(String fileName, int chunkId) {
 		Iterator<FileIdentifier> it = fileList.iterator();
 		List<FileIdentifier> returnList = new ArrayList<FileIdentifier>();
 		FileIdentifier temp;
 		while (it.hasNext()) {
 			temp = it.next();
-			if (temp.getSdfsFileName() == fileName)
+			if (temp.getSdfsFileName() == fileName && temp.getChunkId() == chunkId)
 				returnList.add(temp);
 
 		}
@@ -137,6 +136,12 @@ public class FileIndexerImpl implements FileIndexer {
 		}
 
 		return false;
+	}
+
+	@Override
+	public void delete(FileIdentifier fid) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

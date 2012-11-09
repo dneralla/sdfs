@@ -13,22 +13,38 @@ public class LeaveMessage extends Message {
 	@Override
 	public void processMessage(Process process) {
 		try {
+			process.setRecentLeftNode(getAlteredNode());
 			process.getLogger().info(
 					"Processing Leave message"
 							+ getAlteredNode().getHostAddress());
-			mergeIntoMemberList(process);
-
-			MemberNode self = process.getNode();
-			MulticastLeaveMessage message = new MulticastLeaveMessage(self,
-					self, getAlteredNode());
-			process.setRecentLeftNode(getAlteredNode());
-			process.getMulticastServer().multicastUpdate(message);
+			processNodeDisappearance(process);
 
 		} catch (Exception e) {
 			process.getLogger().info(
 					"Leave Message processing failed or multicast update failed of node"
 							+ getAlteredNode().getHostAddress());
 			e.printStackTrace();
+		}
+	}
+
+	public void processNodeDisappearance(Process process) throws Exception {
+		mergeIntoMemberList(process);
+
+		MemberNode self = process.getNode();
+		MulticastLeaveMessage message = new MulticastLeaveMessage(self,
+				self, getAlteredNode());
+
+		process.getMulticastServer().multicastUpdate(message);
+
+		// sending request to master server for re-replication
+		if(self.equals(process.getMaster())) {
+			 process.getTcpServer().sendMessage(new ReplicateMessage(getAlteredNode().getHostAddress()), process.getMaster().getHostAddress(), process.TCP_SERVER_PORT);
+             process.replicateNode(getAlteredNode().getHostAddress());
+		}
+
+        //
+		if(getAlteredNode().equals(process.getMaster())) {
+			process.startMasterElection();
 		}
 	}
 

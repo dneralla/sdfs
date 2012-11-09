@@ -9,13 +9,16 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import edu.illinois.cs425.mp3.messages.ChunkTransferMessage;
 import edu.illinois.cs425.mp3.messages.CoordinatorMessage;
 import edu.illinois.cs425.mp3.messages.GenericMessage;
 import edu.illinois.cs425.mp3.messages.HeartBeatMessage;
@@ -35,6 +38,7 @@ public class Process {
 
 	public static final int UDP_SERVER_PORT = 4447;
 	public static final int TCP_SERVER_PORT = 4448;
+	public static final int REPLICA_COUNT = 2;
 
 	private int chunkSize = 12 ;
 
@@ -142,7 +146,7 @@ public class Process {
 		this.udpServer = new UDPServer(this);
 		this.multicastServer = new MulticastServer(this);
 		this.tcpServer = new TCPServer(this);
-		this.fsManager = new FileSystemManager(this);
+		this.fsManager = new FileSystemManager();
 		this.fileIndexer = new FileIndexerImpl(this);
 		tcpServer.start(TCP_SERVER_PORT);
 	}
@@ -347,8 +351,42 @@ public class Process {
 		this.chunkSize = chunkSize;
 	}
 
-	public void ensureReplicaCount() {
+	//
+	public void createReplica(FileIdentifier fid) throws ClassNotFoundException {
+		ChunkTransferMessage message;
+		List<InetAddress> nodes;
+		do {
+		nodes = fileIndexer.getSourceAndDestination(fid);
+		message = new ChunkTransferMessage(fid.getSdfsFileName(), fid.getChunkId(), nodes.get(1));
+		}while(tcpServer.sendRequestMessage(message, nodes.get(0), TCP_SERVER_PORT)!=null);
+		fileIndexer.merge(new FileIdentifier(fid.getChunkId(), fid.getSdfsFileName(), nodes.get(1)));
+	}
 
+	public void ensureReplicaCount() throws ClassNotFoundException {
+
+		Map<FileIdentifier, Integer> m = new HashMap<FileIdentifier, Integer>();
+		List<FileIdentifier> uniqueChunks = new ArrayList<FileIdentifier>();
+		for(FileIdentifier fid: fileIndexer.getFileList()) {
+			Integer value = m.get(fid);
+			if(value != null)
+				m.put(fid, value+1);
+			else {
+				m.put(fid, 1);
+				uniqueChunks.add(fid);
+			}
+		}
+		for(FileIdentifier fid: uniqueChunks)
+			for(int j=0; j<REPLICA_COUNT-m.get(fid); j++) {
+				createReplica(fid);
+			}
+	}
+
+	public void replicateNode(InetAddress node) throws ClassNotFoundException {
+		for(FileIdentifier fid: fileIndexer.groupBy(node)) {
+			fileIndexer.delete(fid);
+			List<InetAddress> nodes = fileIndexer.getSourceAndDestination(fid);
+			createReplica(fid);
+		}
 	}
 
 	public FileIndexer getFileIndexer() {
