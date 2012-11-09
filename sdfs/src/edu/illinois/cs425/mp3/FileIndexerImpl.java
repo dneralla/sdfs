@@ -19,6 +19,7 @@ public class FileIndexerImpl implements FileIndexer {
 		this.fileList = new ArrayList<FileIdentifier>();
 	}
 
+	@Override
 	public List<FileIdentifier> getFileList() {
 		return fileList;
 	}
@@ -61,6 +62,21 @@ public class FileIndexerImpl implements FileIndexer {
 
 		return returnList;
 	}
+
+	@Override
+	public List<InetAddress> getReplicas(String fileName) {
+		Iterator<FileIdentifier> it = fileList.iterator();
+		List<InetAddress> returnList = new ArrayList<InetAddress>();
+		FileIdentifier temp;
+		while (it.hasNext()) {
+			temp = it.next();
+			if (temp.getSdfsFileName() == fileName && !returnList.contains(temp.getChunkAddress()))
+				returnList.add(temp.getChunkAddress());
+		}
+
+		return returnList;
+	}
+
 
 	@Override
 	public List<FileIdentifier> groupBy(InetAddress node) {
@@ -141,7 +157,21 @@ public class FileIndexerImpl implements FileIndexer {
 	@Override
 	public void delete(FileIdentifier fid) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	@Override
+	public List<FileIdentifier> groupBy(String fileName) {
+		Iterator<FileIdentifier> it = fileList.iterator();
+		List<FileIdentifier> returnList = new ArrayList<FileIdentifier>();
+		FileIdentifier temp;
+		while (it.hasNext()) {
+			temp = it.next();
+			if (temp.getSdfsFileName() == fileName)
+				returnList.add(temp);
+
+		}
+		return returnList;
 	}
 
 }

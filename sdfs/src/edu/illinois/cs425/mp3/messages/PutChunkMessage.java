@@ -29,4 +29,12 @@ public class PutChunkMessage extends RequestMessage {
 		}
 		outputStream.writeObject(response);
 	}
+
+	public String getChunk() {
+		return chunk;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
 }

@@ -1,29 +1,25 @@
 package edu.illinois.cs425.mp3.messages;
 
-import java.io.Serializable;
+import java.net.InetAddress;
 
-import edu.illinois.cs425.mp3.MemberNode;
 import edu.illinois.cs425.mp3.Process;
 
-public class DeleteMessage extends Message implements Serializable{
-	
+public class DeleteMessage extends RequestMessage {
 	String sdfsFileName;
-	
-	public DeleteMessage(MemberNode sourceNode, MemberNode centralNode,
-			MemberNode alteredNode,String sdfsFileName)
-	{
-		super(sourceNode, centralNode,alteredNode);
-		this.sdfsFileName=sdfsFileName;
-	   
+
+	public DeleteMessage(String sdfsFile) {
+		this.sdfsFileName = sdfsFile;
 	}
-	
-	private static final long serialVersionUID = 1L;
-	
+
 	@Override
-	public void processMessage(Process process) 
-	{
-
-		
+	public void processMessage(Process process) throws ClassNotFoundException {
+		InetAddress self = process.getNode().getHostAddress();
+		for (InetAddress host : process.getFileIndexer().getReplicas(
+				sdfsFileName)) {
+			if (process.getTcpServer().sendRequestMessage(
+					new DeleteChunkMessage(sdfsFileName), host,
+					process.TCP_SERVER_PORT) != null)
+				System.out.println("Chunk deleted");
+		}
 	}
-
 }

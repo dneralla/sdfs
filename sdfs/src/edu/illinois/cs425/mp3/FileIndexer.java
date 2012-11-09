@@ -10,6 +10,8 @@ public interface FileIndexer {
 
 	public void merge(FileIdentifier fileIdentifier);
 
+	public List<FileIdentifier> groupBy(String fileName);
+
 	public List<FileIdentifier> groupBy(String fileName, int chunkId);
 
 	public List<FileIdentifier> groupBy(InetAddress node);
@@ -19,5 +21,7 @@ public interface FileIndexer {
 	public boolean isPresent(FileIdentifier fileIdentifier);
 
 	public void delete(FileIdentifier fid);
+
+	List<InetAddress> getReplicas(String fileName);
 
 }
