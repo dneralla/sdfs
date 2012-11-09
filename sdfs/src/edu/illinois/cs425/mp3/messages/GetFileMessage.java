@@ -12,7 +12,7 @@ public class GetFileMessage extends Message implements Serializable{
 	public GetFileMessage(MemberNode sourceNode, MemberNode centralNode,
 			MemberNode alteredNode,char[] chunkContent,int chunkId,String sdfsFileName)
 	{
-		super(sourceNode, centralNode,alteredNode);
+		super();
 		this.sdfsFileName=sdfsFileName;
 	   
 	}
